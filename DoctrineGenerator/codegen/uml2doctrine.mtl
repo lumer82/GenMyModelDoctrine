@@ -1,8 +1,6 @@
-[module generate('http://www.eclipse.org/uml2/2.0.0/UML')/]
+[module uml2doctrine('http://www.eclipse.org/uml2/2.0.0/UML')/]
 
-[import uml2services /]
-
-[template public generate(class : uml::Class) post (trim())]
+[template public generate(class : Class) post (trim())]
 [comment @main /]
 [file (name+'.dcm.yml', false, 'UTF-8')]
 [name/]:
