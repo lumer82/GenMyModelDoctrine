@@ -1,0 +1,23 @@
+[module generate('http://www.eclipse.org/uml2/2.0.0/UML')/]
+
+[import uml2services /]
+
+[template public generate(class : uml::Class) post (trim())]
+[comment @main /]
+[file (name+'.dcm.yml', false, 'UTF-8')]
+[name/]:
+	type: entity
+	table: [class.name.toUpper()/]
+	readOnly: true
+	id:
+		id:
+			type: integer
+			generator:
+				strategy: AUTO
+	fields:
+	[for (property : Property | class.attribute)]
+		[property.name/]:
+			type: [property.type.name/]
+	[/for]	
+[/file]
+[/template]
