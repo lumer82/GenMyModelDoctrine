@@ -6,7 +6,7 @@
 
 [comment @main/]
 
-[file (c.getNamespace().name.concat(c.name.concat('.php')), false, 'UTF-8')]
+[file (c.name.concat('.php'), false, 'UTF-8')]
 [documentDeclaration(c)/]
 
 [entityUse(c)/]
@@ -24,7 +24,7 @@
 	[/file]
 
 	
-	[file (c.getNamespace().name.concat(c.name.concat('Repository.php')), false, 'UTF-8')]
+	[file (c.name.concat('Repository.php'), false, 'UTF-8')]
 [documentDeclaration(c)/]
 
 use Doctrine\ORM\EntityRepository;
@@ -98,12 +98,12 @@ use Doctrine\ORM\Mapping as ORM;
 [/template]
 
 [template public entityId() post (trim())]
-    /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue(strategy="AUTO")
-     */
-    protected $id = null;
+/**
+ * @Id
+ * @Column(type="integer")
+ * @GeneratedValue(strategy="AUTO")
+ */
+protected $id = null;
 [/template]
 
 
@@ -129,12 +129,8 @@ use Doctrine\ORM\Mapping as ORM;
  * @var [typePHP/]
  *
  * @ORM\Column(name="[p.name/]", type="[typeDoc/]")
-[if (p.name.equalsIgnoreCase('id'))]
- * @ORM\Id
- * @ORM\GeneratedValue(strategy="AUTO")
-[/if]
  */
-[p.visibility/] $[p.name/];
+protected $[p.name/];
 [/let]
 [/let]
 [/for]
