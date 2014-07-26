@@ -159,7 +159,7 @@ protected $[p.name/];
 		[if (p.upper.toString().equalsIgnoreCase('1'))]
 [oneToOne(p)/]
 		[else]
-[ManyToOne(p)/]
+[manyToOne(p)/]
 		[/if]
 	[/if]
 [/for]
