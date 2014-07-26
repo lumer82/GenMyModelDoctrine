@@ -103,7 +103,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @Column(type="integer")
  * @GeneratedValue(strategy="AUTO")
  */
-protected $id = null;
+protected $id;
 [/template]
 
 
