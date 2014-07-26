@@ -140,7 +140,7 @@ protected $[p.name/];
 
 
 [template public entityAssociations(c : Class) post(trim())]
-[for (p : Property | c.getAssociations()]
+[for (p : Property | c.getAssociations())]
 //generate property [p.name/]
 	[if not (p.opposite = null)]
 		[if (p.opposite.upper.toString().equalsIgnoreCase('1'))]
