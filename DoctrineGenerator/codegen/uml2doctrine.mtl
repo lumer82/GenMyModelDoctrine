@@ -144,19 +144,23 @@ protected $[p.name/];
 	[if not (p.opposite = null)]
 		[if (p.opposite.upper.toString().equalsIgnoreCase('1'))]
 			[if (p.upper.toString().equalsIgnoreCase('-1'))]
-	[oneToMany(p)/]
+[oneToMany(p)/]
 			[else]
-	[oneToOne(p)/]
+[oneToOne(p)/]
 			[/if]
 		[else]
 			[if (p.upper.toString().equalsIgnoreCase('1'))]
-	[manyToOne(p)/]
+[manyToOne(p)/]
 			[else]
-	[manyToMany(p)/]
+[manyToMany(p)/]
 			[/if]
 		[/if]
 	[else]
-		//unidirectional
+		[if (p.upper.toString().equalsIgnoreCase('1'))]
+[oneToOne(p)/]
+		[else]
+[ManyToOne(p)/]
+		[/if]
 	[/if]
 [/for]
 [/template]
@@ -183,7 +187,7 @@ protected $[p.name/];
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
  *
- * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]")
+ * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/][/if]")
 [if (isNullable)]
  * @ORM\JoinColumn(nullable=true)
 [/if]
@@ -192,19 +196,14 @@ protected $[p.name/];
 [/template]
 
 
-
-
 [template public manyToOne(p : Property) post(trim())]
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
  *
- * @ORM\ManyToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", inversedBy="[p.opposite.name/]")
+ * @ORM\ManyToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null], inversedBy="[p.opposite.name/][/if]")
  */
 protected $[p.name/];
 [/template]
-
-
-
 
 [template public manyToMany(p : Property) post(trim()) {
 	isOwningSide : Boolean = p.eAnnotations.details->select(value.toString().contains('association:owning'))->notEmpty();
@@ -216,7 +215,6 @@ protected $[p.name/];
  */
 protected $[p.name/];
 [/template]
-
 
 
 
