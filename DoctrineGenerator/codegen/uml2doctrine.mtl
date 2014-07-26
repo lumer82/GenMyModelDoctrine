@@ -99,9 +99,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 [template public entityId() post (trim())]
 /**
- * @Id
- * @Column(type="integer")
- * @GeneratedValue(strategy="AUTO")
+ * @ORM\Id
+ * @ORM\Column(type="integer")
+ * @ORM\GeneratedValue(strategy="AUTO")
  */
 protected $id;
 [/template]
@@ -166,7 +166,7 @@ protected $[p.name/];
  *
  * @ORM\OneToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", mappedBy="[p.opposite.name/]")
  */
-[p.visibility/] $[p.name/];
+protected $[p.name/];
 [/template]
 
 
@@ -184,7 +184,7 @@ protected $[p.name/];
  * @ORM\JoinColumn(nullable=true)
 [/if]
  */
-[p.visibility/] $[p.name/];
+protected $[p.name/];
 [/template]
 
 
@@ -196,7 +196,7 @@ protected $[p.name/];
  *
  * @ORM\ManyToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", inversedBy="[p.opposite.name/]")
  */
-[p.visibility/] $[p.name/];
+protected $[p.name/];
 [/template]
 
 
@@ -210,7 +210,7 @@ protected $[p.name/];
  *
  * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]")
  */
-[p.visibility/] $[p.name/];
+protected $[p.name/];
 [/template]
 
 
