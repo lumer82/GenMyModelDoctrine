@@ -202,7 +202,7 @@ protected $[p.name/];
 }]
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
- * p.owner: [p.owner/], c: [c/]
+ * 
  * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if])
 [if (isNullable)]
  * @ORM\JoinColumn(nullable=true)
