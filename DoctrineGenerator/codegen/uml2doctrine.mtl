@@ -1,12 +1,12 @@
 [comment encoding = UTF-8 /]
-[module uml2doctrine('http://www.eclipse.org/uml2/4.0.0/UML')]
+[module generate('http://www.eclipse.org/uml2/4.0.0/UML')]
 
 
 [template public generate(c : Class) post (trim())]
 
 [comment @main/]
 
-[file (c.name.concat('.php'), false, 'UTF-8')]
+[file (entityFileName(c).concat('.php'), false, 'UTF-8')]
 [documentDeclaration(c)/]
 
 [entityUse(c)/]
@@ -24,7 +24,7 @@
 	[/file]
 
 	
-	[file (c.name.concat('Repository.php'), false, 'UTF-8')]
+	[file (entityFileName(c).concat('Repository.php'), false, 'UTF-8')]
 [documentDeclaration(c)/]
 
 use Doctrine\ORM\EntityRepository;
@@ -49,7 +49,9 @@ class [c.name.concat('Repository')/] extends EntityRepository
 namespace [entityNamespace(c)/];
 [/template]
 
-
+[template public entityFileName(c: Class) post (trim())]
+[c.getNamespace().name.concat('/'.concat(c.name))/]
+[/template]
 
 
 [template public entityNamespace(c : Class) post (trim())]
@@ -140,27 +142,26 @@ protected $[p.name/];
 
 
 [template public entityAssociations(c : Class) post(trim())]
-[for (p : Property | c.getAssociations())]
-//generate property [p.name/]
+[for (p : Property | c.getAssociations().navigableOwnedEnd->select((type <> c) or (opposite <> null and type = c and opposite.type = c))) separator ('\n')]
 	[if not (p.opposite = null)]
 		[if (p.opposite.upper.toString().equalsIgnoreCase('1'))]
 			[if (p.upper.toString().equalsIgnoreCase('-1'))]
-[oneToMany(p)/]
+[oneToMany(p, c)/]
 			[else]
-[oneToOne(p)/]
+[oneToOne(p, c)/]
 			[/if]
 		[else]
 			[if (p.upper.toString().equalsIgnoreCase('1'))]
-[manyToOne(p)/]
+[manyToOne(p, c)/]
 			[else]
-[manyToMany(p)/]
+[manyToMany(p, c)/]
 			[/if]
 		[/if]
 	[else]
 		[if (p.upper.toString().equalsIgnoreCase('1'))]
-[oneToOne(p)/]
+[oneToOne(p, c)/]
 		[else]
-[manyToOne(p)/]
+[oneToManyUni(p, c)/]
 		[/if]
 	[/if]
 [/for]
@@ -169,11 +170,25 @@ protected $[p.name/];
 
 
 
-[template public oneToMany(p : Property) post(trim())]
+[template public oneToMany(p : Property, c : Class) post(trim())]
 /**
  * @var \Doctrine\Common\Collections\ArrayCollection
  *
- * @ORM\OneToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", mappedBy="[p.opposite.name/]")
+ * @ORM\OneToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], mappedBy="[p.opposite.name/]"[/if])
+ */
+protected $[p.name/];
+[/template]
+
+
+[template public oneToManyUni(p : Property, c : Class) post(trim())]
+/**
+ * @var \Doctrine\Common\Collections\ArrayCollection
+ *
+ * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]")
+ * @ORM\JoinTable(name="[c.name.toLower()/]_[p.name.toLower()/]",
+ *					joinColumns={@ORM\JoinColumn(name="[c.name.toLower()/]_id", referencedColumnName="id")},
+ *					inverseJoinColumns={@ORM\JoinColumn(name="[p.type.name.toLower()/]_id", referencedColumnName="id", unique=true)}
+ * 				)
  */
 protected $[p.name/];
 [/template]
@@ -181,13 +196,13 @@ protected $[p.name/];
 
 
 
-[template public oneToOne(p : Property) post(trim()) {
+[template public oneToOne(p : Property, c : Class) post(trim()) {
 	isOwningSide : Boolean = p.eAnnotations.details->select(value.toString().contains('association:owning'))->notEmpty();
 	isNullable : Boolean = p.lower.toString().equalsIgnoreCase('0');
 }]
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
- *
+ * p.owner: [p.owner/], c: [c/]
  * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if])
 [if (isNullable)]
  * @ORM\JoinColumn(nullable=true)
@@ -197,7 +212,7 @@ protected $[p.name/];
 [/template]
 
 
-[template public manyToOne(p : Property) post(trim())]
+[template public manyToOne(p : Property, c : Class) post(trim())]
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
  *
@@ -206,13 +221,13 @@ protected $[p.name/];
 protected $[p.name/];
 [/template]
 
-[template public manyToMany(p : Property) post(trim()) {
+[template public manyToMany(p : Property, c : Class) post(trim()) {
 	isOwningSide : Boolean = p.eAnnotations.details->select(value.toString().contains('association:owning'))->notEmpty();
 }]
 /**
  * @var \Doctrine\Common\Collections\ArrayCollection
- *
- * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]")
+ * 
+ * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if])
  */
 protected $[p.name/];
 [/template]
@@ -225,7 +240,7 @@ protected $[p.name/];
  */
 public function __construct()
 {
-[for (p : Property | c.getAssociations().navigableOwnedEnd->select((type <> c) or (type = c and opposite.type = c)))]
+[for (p : Property | c.getAssociations().navigableOwnedEnd->select((type <> c) or (opposite <> null and type = c and opposite.type = c)))]
 	[if (p.opposite.upper.toString().equalsIgnoreCase('1'))]
 		[if (p.upper.toString().equalsIgnoreCase('-1'))]
 	$this->[p.name/] = new \Doctrine\Common\Collections\ArrayCollection();
