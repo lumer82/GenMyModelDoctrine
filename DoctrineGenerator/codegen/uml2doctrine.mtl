@@ -1,6 +1,7 @@
 [comment encoding = UTF-8 /]
 [module uml2doctrine('http://www.eclipse.org/uml2/4.0.0/UML')]
 
+[import formtype /]
 
 [template public generate(c : Class) post (trim())]
 
@@ -37,6 +38,8 @@ class [c.name.concat('Repository')/] extends EntityRepository
 }
 	[/file]
 
+[formtype(c)/]
+
 	
 [/template]
 
@@ -50,7 +53,7 @@ namespace [entityNamespace(c)/];
 [/template]
 
 [template public entityFileName(c: Class) post (trim())]
-[c.getNamespace().name.concat('/'.concat(c.name))/]
+[c.getNamespace().name.concat('/Entity/'.concat(c.name))/]
 [/template]
 
 
@@ -125,7 +128,7 @@ protected $id;
 
 [template public entityProperties(c : Class) post(trim())]
 [for (p: Property | c.attribute) separator ('\n')]
-[let typePHP : String = p.type.name.replaceAll('Integer', 'integer').replaceAll('String', 'string').replaceAll('Boolean', 'boolean')]
+[let typePHP : String = p.type.name.replaceAll('Integer', 'integer').replaceAll('String', 'string').replaceAll('Boolean', 'boolean').replaceAll('EDate', '\\\\DateTime')]
 [let typeDoc : String = typePHP.replaceAll('\\\\DateTime', 'datetime')]
 /**
  * @var [typePHP/]
@@ -174,7 +177,7 @@ protected $[p.name/];
 /**
  * @var \Doctrine\Common\Collections\ArrayCollection
  *
- * @ORM\OneToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], mappedBy="[p.opposite.name/]"[/if])
+ * @ORM\OneToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], mappedBy="[p.opposite.name/]"[/if], cascade={"persist"})
  */
 protected $[p.name/];
 [/template]
@@ -184,7 +187,7 @@ protected $[p.name/];
 /**
  * @var \Doctrine\Common\Collections\ArrayCollection
  *
- * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]")
+ * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]", cascade={"persist"})
  * @ORM\JoinTable(name="[c.name.toLower()/]_[p.name.toLower()/]",
  *					joinColumns={@ORM\JoinColumn(name="[c.name.toLower()/]_id", referencedColumnName="id")},
  *					inverseJoinColumns={@ORM\JoinColumn(name="[p.type.name.toLower()/]_id", referencedColumnName="id", unique=true)}
@@ -197,15 +200,15 @@ protected $[p.name/];
 
 
 [template public oneToOne(p : Property, c : Class) post(trim()) {
-	isOwningSide : Boolean = p.eAnnotations.details->select(value.toString().contains('association:owning'))->notEmpty();
-	isNullable : Boolean = p.lower.toString().equalsIgnoreCase('0');
+	isOwningSide : Boolean = (p.association.memberEnd->select(prop : Property|prop <> null)->first() = p);
+	isNullable : Boolean = p.lower.toString().equalsIgnoreCase('1');
 }]
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
  * 
- * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if])
+ * @ORM\OneToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if], cascade={"persist"})
 [if (isNullable)]
- * @ORM\JoinColumn(nullable=true)
+ * @ORM\JoinColumn(nullable=false)
 [/if]
  */
 protected $[p.name/];
@@ -216,18 +219,18 @@ protected $[p.name/];
 /**
  * @var \[entityFQN(p.type.oclAsType(Class))/]
  *
- * @ORM\ManyToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], inversedBy="[p.opposite.name/]"[/if])
+ * @ORM\ManyToOne(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], inversedBy="[p.opposite.name/]"[/if], cascade={"persist"})
  */
 protected $[p.name/];
 [/template]
 
 [template public manyToMany(p : Property, c : Class) post(trim()) {
-	isOwningSide : Boolean = p.eAnnotations.details->select(value.toString().contains('association:owning'))->notEmpty();
+	isOwningSide : Boolean = (p.association.memberEnd->select(prop : Property|prop <> null)->first() = p);
 }]
 /**
  * @var \Doctrine\Common\Collections\ArrayCollection
  * 
- * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if])
+ * @ORM\ManyToMany(targetEntity="[entityFQN(p.type.oclAsType(Class))/]"[if not (p.opposite = null)], [if(isOwningSide)]inversed[else]mapped[/if]By="[p.opposite.name/]"[/if], cascade={"persist"})
  */
 protected $[p.name/];
 [/template]
