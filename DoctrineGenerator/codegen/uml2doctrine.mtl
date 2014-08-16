@@ -128,7 +128,7 @@ protected $id;
 
 [template public entityProperties(c : Class) post(trim())]
 [for (p: Property | c.attribute) separator ('\n')]
-[let typePHP : String = p.type.name.replaceAll('Integer', 'integer').replaceAll('String', 'string').replaceAll('Boolean', 'boolean').replaceAll('EDate', '\\\\DateTime')]
+[let typePHP : String = p.type.name.replaceAll('Integer', 'integer').replaceAll('String', 'string').replaceAll('Boolean', 'boolean').replaceAll('EDate', '\\\\DateTime').replaceAll('Date', '\\\\DateTime')]
 [let typeDoc : String = typePHP.replaceAll('\\\\DateTime', 'datetime')]
 /**
  * @var [typePHP/]
